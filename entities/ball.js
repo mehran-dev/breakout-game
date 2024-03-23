@@ -11,5 +11,13 @@ export class Ball {
     this.height = opts.height;
     this.position = opts.position;
     this.velocity = opts.velocity;
+    this.paddleCollisionSpeedBoost = opts.paddleCollisionSpeedBoost;
+  }
+
+  get center() {
+    return {
+      x: this.position.x + this.width / 2,
+      y: this.position.y + this.height / 2,
+    };
   }
 }

@@ -44,9 +44,13 @@ const ball = new Ball({
     y: 100,
   },
   velocity: {
-    x: 1000,
-    y: 1000,
+    x: 200,
+    y: 200,
   },
+  maxVelocity: { x: 500, y: 500 },
+  paddleBounceFactor: { x: 250, y: 0 },
+  //   brickCollisionSpeedBoost: { x: 0, y: 10 },
+  paddleCollisionSpeedBoost: { x: 0, y: 10 },
 });
 
 const mouseMoveHandler = (e) => {
@@ -94,7 +98,19 @@ const frame = (hrt) => {
 
   if (!ballPaddleCollision && hasCollision(ball, paddle)) {
     ball.position.y = paddle.position.y - ball.height;
+
+    if (Math.abs(ball.velocity.y) < ball.maxVelocity.y) {
+      ball.velocity.y += ball.paddleCollisionSpeedBoost.y;
+    }
+
     ball.velocity.y *= -1;
+
+    const halfPaddleWidth = paddle.width / 2;
+    const difference = paddle.center.x - ball.center.x;
+    const factor = Math.abs(difference) / halfPaddleWidth;
+
+    ball.velocity.x =
+      Math.sign(-difference) * ball.paddleBounceFactor.x * factor;
   }
 
   //bottom collide
@@ -131,8 +147,6 @@ const frame = (hrt) => {
   );
   ctx.fillStyle = "white";
   ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height);
-  ctx.font = "normal 24pt Arial";
-  ctx.fillText(" delta time : " + dt, 10, 26);
 
   last = hrt;
 

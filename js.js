@@ -1,4 +1,5 @@
 import { Ball } from "./entities/ball.js";
+import { Paddle } from "./entities/paddle.js";
 import {
   aabbBottom,
   aabbLeft,
@@ -20,14 +21,21 @@ const pointerLockHandler = () => {
 canvas.addEventListener("click", canvas.requestPointerLock);
 document.addEventListener("pointerlockchange", pointerLockHandler);
 
-let dt = 0;
+let delta = 0;
 let last = performance.now();
 
-const paddle = {
+// const paddle = {
+//   position: { x: (canvas.width - 404) / 2, y: canvas.height - 20 },
+//   width: 104,
+//   height: 16,
+// };
+
+const paddle = new Paddle({
   position: { x: (canvas.width - 404) / 2, y: canvas.height - 20 },
   width: 104,
   height: 16,
-};
+});
+
 const mouse = {
   position: {
     x: paddle.position.x,
@@ -49,7 +57,7 @@ const ball = new Ball({
   },
   maxVelocity: { x: 500, y: 500 },
   paddleBounceFactor: { x: 250, y: 0 },
-  //   brickCollisionSpeedBoost: { x: 0, y: 10 },
+
   paddleCollisionSpeedBoost: { x: 0, y: 10 },
 });
 
@@ -57,44 +65,45 @@ const mouseMoveHandler = (e) => {
   mouse.position.x += e.movementX;
 
   mouse.clamp.x = clamp(mouse.position.x, 0, canvas.width - paddle.width);
-  console.log(mouse.clamp, mouse.position);
+  //   console.log(mouse.clamp, mouse.position);
 };
 
 const frame = (hrt) => {
-  dt = (hrt - last) / 1000;
+  delta = (hrt - last) / 1000;
 
   paddle.position.x = mouse.clamp.x;
 
-  ball.position.x += ball.velocity.x * dt;
-  ball.position.y += ball.velocity.y * dt;
+  ball.position.x += ball.velocity.x * delta;
+  ball.position.y += ball.velocity.y * delta;
 
   let ballPaddleCollision = false;
 
-  if (hasCollision(ball, paddle)) {
-    ballPaddleCollision = true;
-    const closestSide =
-      Math.abs(aabbRight(paddle) - aabbLeft(ball)) <
-      Math.abs(aabbLeft(paddle) - aabbRight(ball))
-        ? "right"
-        : "left";
-    //ball is moving Left/Right
-    if (ball.velocity.x < 0) {
-      if (closestSide === "left") {
-        ball.position.x = aabbLeft(paddle) - ball.width;
-      } else {
-        ball.position.x = aabbRight(paddle);
-        ball.velocity.x *= -1;
-      }
-    } else if (ball.velocity.x > 0) {
-      //Moving to the Right
-      if (closestSide === "right") {
-        ball.position.x = aabbRight(paddle);
-      } else {
-        ball.position.x = aabbLeft(paddle) - ball.width;
-        ball.velocity *= -1;
-      }
-    }
-  }
+  //   if (hasCollision(ball, paddle)) {
+  //     ballPaddleCollision = true;
+  //     const closestSide =
+  //       Math.abs(aabbRight(paddle) - aabbLeft(ball)) <
+  //       Math.abs(aabbLeft(paddle) - aabbRight(ball))
+  //         ? "right"
+  //         : "left";
+
+  //     //ball is moving Left/Right
+  //     if (ball.velocity.x < 0) {
+  //       if (closestSide === "left") {
+  //         ball.position.x = aabbLeft(paddle) - ball.width;
+  //       } else {
+  //         ball.position.x = aabbRight(paddle);
+  //         ball.velocity.x *= -1;
+  //       }
+  //     } else if (ball.velocity.x > 0) {
+  //       //Moving to the Right
+  //       if (closestSide === "right") {
+  //         ball.position.x = aabbRight(paddle);
+  //       } else {
+  //         ball.position.x = aabbLeft(paddle) - ball.width;
+  //         ball.velocity *= -1;
+  //       }
+  //     }
+  //   }
 
   if (!ballPaddleCollision && hasCollision(ball, paddle)) {
     ball.position.y = paddle.position.y - ball.height;

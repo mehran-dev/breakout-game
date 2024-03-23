@@ -11,7 +11,9 @@ export class Ball {
     this.height = opts.height;
     this.position = opts.position;
     this.velocity = opts.velocity;
+    this.maxVelocity = opts.maxVelocity;
     this.paddleCollisionSpeedBoost = opts.paddleCollisionSpeedBoost;
+    this.paddleBounceFactor = opts.paddleBounceFactor;
   }
 
   get center() {

@@ -76,36 +76,38 @@ const frame = (hrt) => {
   ball.position.x += ball.velocity.x * delta;
   ball.position.y += ball.velocity.y * delta;
 
-  let ballPaddleCollision = false;
+  let ballPaddleCollisionHandled = false;
 
-  //   if (hasCollision(ball, paddle)) {
-  //     ballPaddleCollision = true;
-  //     const closestSide =
-  //       Math.abs(aabbRight(paddle) - aabbLeft(ball)) <
-  //       Math.abs(aabbLeft(paddle) - aabbRight(ball))
-  //         ? "right"
-  //         : "left";
+  if (hasCollision(ball, paddle)) {
+    console.log("HAndler !!!!");
+    ballPaddleCollisionHandled = true;
+    const closestSide =
+      Math.abs(aabbRight(paddle) - aabbLeft(ball)) <
+      Math.abs(aabbLeft(paddle) - aabbRight(ball))
+        ? "right"
+        : "left";
 
-  //     //ball is moving Left/Right
-  //     if (ball.velocity.x < 0) {
-  //       if (closestSide === "left") {
-  //         ball.position.x = aabbLeft(paddle) - ball.width;
-  //       } else {
-  //         ball.position.x = aabbRight(paddle);
-  //         ball.velocity.x *= -1;
-  //       }
-  //     } else if (ball.velocity.x > 0) {
-  //       //Moving to the Right
-  //       if (closestSide === "right") {
-  //         ball.position.x = aabbRight(paddle);
-  //       } else {
-  //         ball.position.x = aabbLeft(paddle) - ball.width;
-  //         ball.velocity *= -1;
-  //       }
-  //     }
-  //   }
+    //ball is moving Left
+    if (ball.velocity.x < 0) {
+      if (closestSide === "left") {
+        // ball.position.x = aabbLeft(paddle) - ball.width;
+      } else {
+        // ball.position.x = aabbRight(paddle);
+        ball.velocity.x *= -1;
+      }
+      //Moving to the Right
+    } else if (ball.velocity.x > 0) {
+      if (closestSide === "right") {
+        // ball.position.x = aabbRight(paddle);
+      } else {
+        // ball.position.x = aabbLeft(paddle) - ball.width;
+        ball.velocity.x *= -1;
+      }
+    }
+  }
 
-  if (!ballPaddleCollision && hasCollision(ball, paddle)) {
+  if (hasCollision(ball, paddle)) {
+    console.log("Not handler!@#$@#$$");
     ball.position.y = paddle.position.y - ball.height;
 
     if (Math.abs(ball.velocity.y) < ball.maxVelocity.y) {

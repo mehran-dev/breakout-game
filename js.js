@@ -1,11 +1,40 @@
 import { Ball } from "./entities/ball.js";
-
+import {
+  aabbBottom,
+  aabbLeft,
+  aabbRight,
+  aabbTop,
+  hasCollision,
+} from "./utils/collision.js";
+import { clamp } from "./utils/math.js";
 const canvas = document.getElementById("canvas");
 
 const ctx = canvas.getContext("2d");
+const pointerLockHandler = () => {
+  if (document.pointerLockElement === canvas) {
+    document.addEventListener("mousemove", mouseMoveHandler);
+  } else {
+    document.removeEventListener("mousemove", mouseMoveHandler);
+  }
+};
+canvas.addEventListener("click", canvas.requestPointerLock);
+document.addEventListener("pointerlockchange", pointerLockHandler);
 
 let dt = 0;
 let last = performance.now();
+
+const paddle = {
+  position: { x: (canvas.width - 404) / 2, y: canvas.height - 20 },
+  width: 104,
+  height: 16,
+};
+const mouse = {
+  position: {
+    x: paddle.position.x,
+    y: 0,
+  },
+  clamp: { x: paddle.position.x, y: 0 },
+};
 
 const ball = new Ball({
   width: 12,
@@ -20,11 +49,53 @@ const ball = new Ball({
   },
 });
 
+const mouseMoveHandler = (e) => {
+  mouse.position.x += e.movementX;
+
+  mouse.clamp.x = clamp(mouse.position.x, 0, canvas.width - paddle.width);
+  console.log(mouse.clamp, mouse.position);
+};
+
 const frame = (hrt) => {
   dt = (hrt - last) / 1000;
 
+  paddle.position.x = mouse.clamp.x;
+
   ball.position.x += ball.velocity.x * dt;
   ball.position.y += ball.velocity.y * dt;
+
+  let ballPaddleCollision = false;
+
+  if (hasCollision(ball, paddle)) {
+    ballPaddleCollision = true;
+    const closestSide =
+      Math.abs(aabbRight(paddle) - aabbLeft(ball)) <
+      Math.abs(aabbLeft(paddle) - aabbRight(ball))
+        ? "right"
+        : "left";
+    //ball is moving Left/Right
+    if (ball.velocity.x < 0) {
+      if (closestSide === "left") {
+        ball.position.x = aabbLeft(paddle) - ball.width;
+      } else {
+        ball.position.x = aabbRight(paddle);
+        ball.velocity.x *= -1;
+      }
+    } else if (ball.velocity.x > 0) {
+      //Moving to the Right
+      if (closestSide === "right") {
+        ball.position.x = aabbRight(paddle);
+      } else {
+        ball.position.x = aabbLeft(paddle) - ball.width;
+        ball.velocity *= -1;
+      }
+    }
+  }
+
+  if (!ballPaddleCollision && hasCollision(ball, paddle)) {
+    ball.position.y = paddle.position.y - ball.height;
+    ball.velocity.y *= -1;
+  }
 
   //bottom collide
   if (ball.position.y + ball.height >= canvas.height) {
@@ -49,6 +120,15 @@ const frame = (hrt) => {
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //   paddle
+  ctx.fillStyle = "white";
+
+  ctx.fillRect(
+    paddle.position.x,
+    paddle.position.y,
+    paddle.width,
+    paddle.height
+  );
   ctx.fillStyle = "white";
   ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height);
   ctx.font = "normal 24pt Arial";
